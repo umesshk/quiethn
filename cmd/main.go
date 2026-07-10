@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/umesshk/quiethn/hn"
 )
 
 func main() {
-	http.HandleFunc("/", greet)
-	http.ListenAndServe(":8080", nil)
+	var c hn.Client
+	c.FetchData()
+
+	fmt.Println("Hello World")
 }
