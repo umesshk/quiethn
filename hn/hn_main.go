@@ -1,8 +1,18 @@
 package hn
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+)
 
 func StartServer() {
+
+	var port, numStories int
+
+	flag.IntVar(&port, "port", 3000, "provide the port number for the server ")
+	flag.IntVar(&numStories, "num", 30, "provide the number of stories to fetch ")
+
+	flag.Parse()
 
 	var c Client
 
@@ -11,9 +21,5 @@ func StartServer() {
 	if err != nil {
 		return
 	}
-
-	item, err := c.GetItem(ids[0])
-
-	fmt.Println(item)
 
 }
