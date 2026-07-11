@@ -55,27 +55,26 @@ func (c *Client) FetchData() ([]int, error) {
 
 }
 
-func (c *Client) GetItem(id int) (*hn_item, error) {
+func (c *Client) GetItem(id int) (hn_item, error) {
+
+	var item hn_item
 
 	res, err := http.Get(fmt.Sprintf("%s/item/%d.json", c.apibase, id))
 
 	if err != nil {
-		return nil, err
+		return item, err
 	}
-
-	var item hn_item
 
 	dec := json.NewDecoder(res.Body)
 
 	err = dec.Decode(&item)
 
 	if err != nil {
-		fmt.Println("Decoder Failed ", err)
-		return nil, err
+		return item, err
 	}
 
 	defer res.Body.Close()
 
-	return &item, nil
+	return item, nil
 
 }
