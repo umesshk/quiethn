@@ -6,8 +6,7 @@ import (
 )
 
 func main() {
-	var c hn.Client
-	c.FetchData()
 
-	fmt.Println("Hello World")
+	hn.StartServer()
+
 }

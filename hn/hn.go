@@ -32,26 +32,50 @@ func (c *Client) defaulty() {
 	}
 }
 
-func (c *Client) FetchData() {
+func (c *Client) FetchData() ([]int, error) {
 	c.defaulty()
 
 	res, err := http.Get(fmt.Sprintf("%s/topstories.json", c.apibase))
 
 	if err != nil {
-		fmt.Println(err)
-		panic("Error Occured fetching ")
+		return nil, err
 	}
-
 	var ids []int
 
 	dec := json.NewDecoder(res.Body)
 	err = dec.Decode(&ids)
 
+	defer res.Body.Close()
+
 	if err != nil {
-		fmt.Println("Error Occured", err)
+		return nil, err
 	}
 
-	fmt.Println(ids)
+	return ids, nil
+
+}
+
+func (c *Client) GetItem(id int) (*hn_item, error) {
+
+	res, err := http.Get(fmt.Sprintf("%s/item/%d.json", c.apibase, id))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var item hn_item
+
+	dec := json.NewDecoder(res.Body)
+
+	err = dec.Decode(&item)
+
+	if err != nil {
+		fmt.Println("Decoder Failed ", err)
+		return nil, err
+	}
 
 	defer res.Body.Close()
+
+	return &item, nil
+
 }
