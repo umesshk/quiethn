@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
@@ -50,24 +51,51 @@ func handler(numStories int, tpl *template.Template) http.HandlerFunc {
 		var stories []item
 
 		fmt.Println("Getting the top stories..")
-		for _, id := range ids {
 
-			fmt.Println("Getting Story id : ", id)
-			story_item, err := c.GetItem(id)
+		type Result struct {
+			story_item item
+			idx        int
+			err        error
+		}
 
-			if err != nil {
-				http.Error(w, "Error fetching data", http.StatusInternalServerError)
-				return
+		ResultChan := make(chan Result)
 
-			}
+		for i := range numStories {
 
-			if isLinkStory(story_item) {
-				item := parseHn(story_item)
-				stories = append(stories, item)
+			go func(id, idx int) {
 
-				if len(stories) >= numStories {
-					break
+				fmt.Println("Getting Story id : ", id)
+				story_item, err := c.GetItem(id)
+
+				if err != nil {
+					http.Error(w, "Error fetching data", http.StatusInternalServerError)
+					ResultChan <- Result{err: err}
+
 				}
+
+				if isLinkStory(story_item) {
+					item := parseHn(story_item)
+
+					ResultChan <- Result{item, i, nil}
+				}
+
+			}(ids[i], i)
+
+		}
+		var results []Result
+
+		for range numStories {
+			results = append(results, <-ResultChan)
+		}
+
+		sort.Slice(results, func(i, j int) bool {
+			return results[i].idx < results[j].idx
+		})
+
+		for _, st := range results {
+
+			if st.err == nil {
+				stories = append(stories, st.story_item)
 			}
 
 		}
